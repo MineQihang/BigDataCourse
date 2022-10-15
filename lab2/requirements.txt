@@ -1,0 +1,4 @@
+jieba
+wordcloud
+pyecharts==1.7.0
+snapshot-selenium
