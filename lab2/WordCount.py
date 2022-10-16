@@ -6,12 +6,8 @@
 """
 
 from pyspark import SparkConf, SparkContext
-# from visualize import visualize
+from visualize import visualize
 import jieba
-
-import os
-java8_location = '/usr/lib/jvm/java-1.8.0-openjdk'  # 设置你自己的路径
-os.environ['JAVA_HOME'] = java8_location
 
 SRCPATH = '/home/hadoop/BigDataCourse/lab2/src/'  # 资源文件所在位置
 
@@ -76,6 +72,6 @@ def wordcount(isvisualize=False):
 
 if __name__ == '__main__':
     # 进行词频统计并可视化
-    resRdd = wordcount(isvisualize=False)
+    resRdd = wordcount(isvisualize=True)
     print(resRdd.take(10))  # 查看前10个
 

@@ -21,7 +21,7 @@ chrome_options.add_argument('--headless')
 chrome_options.add_argument('--no-sandbox')
 chrome_options.add_argument('--disable-dev-shm-usage')
 
-SAVAPATH = '/home/hadoop/Experiment/Ex2_WordCount/results/'
+SAVAPATH = '/home/hadoop/BigDataCourse/lab2/results/'
 
 class visualize:
 
@@ -32,20 +32,16 @@ class visualize:
         :param topK: 截取的指定长度
         :return:
         """
-
-        # 提示：SparkRdd有函数可直接转换
-        # 【现在你应该完成下面函数编码】
-        # resDic =  resRdd.collectAsMap()
-        resDic =
+        # 转化为map
+        resDic = resRdd.collectAsMap()
         # 截取字典前K个
         K = 0
         wordDicK = {}
         for key, value in resDic.items():
-            # 完成循环截取字典
-
-
-
-
+            if K >= topK:
+                break
+            wordDicK[key] = value
+            K += 1
         return wordDicK
 
     def drawWorcCloud(self, wordDic):
