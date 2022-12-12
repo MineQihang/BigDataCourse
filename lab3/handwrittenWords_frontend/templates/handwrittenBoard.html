@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中文手写数字识别</title>
+    {#    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">#}
+    {#    <link href="{% static 'font-awesome/css/font-awesome.css' %}" rel="stylesheet">#}
+    {#    <link href="{% static 'css/animate.css' %}" rel="stylesheet">#}
+    {#    <link href="{% static 'css/style.css' %}" rel="stylesheet">#}
+    <link href="static/css/bootstrap.min.css" rel="stylesheet">
+    <link href="static/font-awesome/css/font-awesome.css" rel="stylesheet">
+
+    <link href="static/css/animate.css" rel="stylesheet">
+    <link href="static/css/style.css" rel="stylesheet">
+
+    <!-- Mainly scripts -->
+    <script src="{% static 'js/jquery-2.1.1.js' %}"></script>
+    <script src="{% static 'js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'js/inspinia.js' %}"></script>
+    <script src="{% static 'js/jquery.metisMenu.js' %}"></script>
+</head>
+
+<body>
+
+<div id="wrapper">
+
+    <div id="page-wrapper" class="gray-bg">
+        <div class="row border-bottom">
+            <nav class="navbar navbar-static-top" role="navigation" style="margin-bottom: 0">
+
+
+            </nav>
+        </div>
+
+        {#        {% block details %}h{% endblock %}#}
+
+        <div class="row  border-bottom white-bg dashboard-header">
+
+            <div class="col-sm-3">
+                <h2>中文数字手写识别</h2>
+                <small></small>
+                <ul class="list-group clear-list m-t">
+                    <li class="list-group-item fist-item">
+                        <span class="label label-success">1</span> 右侧画板画上数字
+                    </li>
+                    <li class="list-group-item">
+                        <span class="label label-info">2</span> 点击识别
+                    </li>
+                    <li class="list-group-item">
+                        <span class="label label-info">3</span> 显示结果
+                    </li>
+                    <li class="list-group-item">
+                        <span class="label label-primary">4</span> 点击清空
+                    </li>
+                </ul>
+            </div>
+
+            <div class="col-sm-6">
+                <canvas id="canvas" width="500" height="500">
+                </canvas>
+                <div class="row text-left">
+                    <div class="col-xs-4">
+                        <button onclick="shibie()" class="btn btn-primary  m-t">识别</button>
+                        <button onclick="qingkong()" class="btn btn-primary  m-t" >清空</button>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="col-sm-3">
+                <div class="statistic-box">
+                    <div class="row text-center">
+
+                        <div class="col-lg-6">
+                            <h2>识别结果</h2>
+                            <h2 id="result"></h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <style>
+                #canvas {
+                    background: #fff;
+                    cursor: crosshair;
+                    margin-left: 10px;
+                    margin-top: 10px;
+                    -webkit-box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.5);
+                    -moz-box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.5);
+                    box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.5);
+                }
+
+
+            </style>
+
+            <script>
+                var canvas = document.querySelector("canvas");
+                var cobj = canvas.getContext("2d");
+
+                var data = [];
+                var s = "pen";
+                var c = "#000";
+                var w = "8";
+
+                function drawGrid(stepX, stepY, color, lineWidth) {
+                    //this.setCanvasBg("#fff");
+                    cobj.beginPath();
+                    /*
+                     // 将canvas的透明背景设置成白色
+                    var imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+                    for(var i = 0; i < imageData.data.length; i += 4) {
+                        // 当该像素是透明的，则设置成白色
+                        if(imageData.data[i + 3] == 0) {
+                            imageData.data[i] = 255;
+                            imageData.data[i + 1] = 255;
+                            imageData.data[i + 2] = 255;
+                            imageData.data[i + 3] = 255;
+                        }
+                    }
+                    context.putImageData(imageData, 0, 0);
+                    */
+
+                    // 创建垂直格网线路径
+                    for (var i = 0.5 + stepX; i < canvas.width; i += stepX) {
+                        cobj.moveTo(i, 0);
+                        cobj.lineTo(i, canvas.height);
+                    }
+                    // 创建水平格网线路径
+
+                    for (var j = 0.5 + stepY; j < canvas.height; j += stepY) {
+                        cobj.moveTo(0, j);
+                        cobj.lineTo(canvas.width, j);
+                    }
+
+
+                    // 设置绘制颜色
+                    cobj.strokeStyle = color;
+                    // 设置绘制线段的宽度
+                    cobj.lineWidth = lineWidth;
+                    // 绘制格网
+                    cobj.stroke();
+                    // 清除路径
+                    cobj.beginPath();
+
+                }
+
+                drawGrid(10, 10, 'white', 10);
+
+
+                canvas.onmousedown = function (e) {
+                    var ox = e.offsetX;
+                    var oy = e.offsetY;
+                    var draw = new Draw(cobj, {
+                        color: c,
+                        width: w
+                    });
+
+                    cobj.beginPath();
+                    cobj.moveTo(ox, oy);
+
+                    canvas.onmousemove = function (e) {
+                        var mx = e.offsetX;
+                        var my = e.offsetY;
+                        if (s != "eraser") {
+                            if (data.length != 0) {
+
+                                cobj.putImageData(data[data.length - 1], 0, 0, 0, 0, 500, 500); //将某个图像数据放置到画布指定的位置上  后面四个参数可省略
+
+                            }
+                        }
+                        //            cobj.strokeRect(ox,oy,mx-ox,my-oy);
+                        // cobj.beginPath()
+
+                        draw[s](ox, oy, mx, my);
+                    };
+                    document.onmouseup = function () {
+                        data.push(cobj.getImageData(0, 0, 500, 500)); //获取画布当中指定区域当中所有的图形数据
+                        canvas.onmousemove = null;
+                        document.onmouseup = null;
+                    }
+                };
+
+                function qingkong() {
+                    cobj.clearRect(0, 0, 500, 500);
+                    data = [];
+                    drawGrid(10, 10, 'white', 0.5);
+
+                }
+
+                class Draw {
+                    constructor(cobj, option) {
+                        this.cobj = cobj;
+                        this.color = option.color;
+                        this.width = option.width;
+                        this.style = option.style;
+                    }
+
+                    init() { //初始化
+                        this.cobj.strokeStyle = this.color;
+                        this.cobj.fillStyle = this.color;
+                        this.cobj.lineWidth = this.width;
+                    }
+
+                    pen(ox, oy, mx, my) {
+                        this.init();
+                        this.cobj.lineTo(mx, my);
+                        this.cobj.stroke();
+                    }
+                }
+            </script>
+
+            <script>
+                function shibie() {
+                    var img = document.getElementById("canvas").toDataURL("image/jpg");
+                    img = img.replace(/^data:image\/(png|jpg);base64,/, "");
+                    sendData = {
+                        "img": img,
+                    };
+                    $.ajax({
+                        traditional: true,
+                        url: "/handwrittenBoard/",
+                        type: 'get',
+                        data: sendData,
+                        dataType: "json",
+                        success: function (data) {
+                            {#alert(data["res"])#}
+                            let res = data["res"];
+                            $("#result").text(res);
+                        }
+                    })
+                }
+            </script>
+        </div>
+
+    </div>
+</div>
+
+
+
+</body>
+
+</html>

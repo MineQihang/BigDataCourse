@@ -3,9 +3,11 @@ import matplotlib.pyplot as plt
 import os
 from sklearn.model_selection import train_test_split
 
+import numpy as np
+
 # 使用skimage库来处理hog特征,这个库的效果不如opencv,但是opencv在centos上可能安装出错
 # 如果你知道如何解决opencv-python的编译问题,可以使用opencv
-from skimage.feature import hog
+from skimage.feature import hog, canny
 
 
 data_dir = "RawDataset"

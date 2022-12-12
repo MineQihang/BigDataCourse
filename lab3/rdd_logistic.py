@@ -7,15 +7,15 @@ from pyspark.sql import SparkSession
 from pyspark.ml.image import ImageSchema
 from pyspark.mllib.regression import LabeledPoint
 from pyspark.mllib.linalg import Vectors
-from pyspark.mllib.classification import SVMWithSGD
-from pyspark.mllib.classification import LogisticRegressionModel
+from pyspark.mllib.classification import LogisticRegressionWithSGD, LogisticRegressionModel
 from pyspark.mllib.classification import LogisticRegressionWithLBFGS
-from pyspark.ml.classification import LogisticRegression
 from pyspark.sql.functions import lit
 import numpy as np
 import time
+import os, tempfile
 
-conf = SparkConf().setAppName("ChineseHandwrittingNumber").setMaster("spark://zhl3044:7077")
+conf = SparkConf().setAppName("ChineseHandwrittingNumber").setMaster("spark://master:7077")
+conf.set("spark.testing.memory", "2147480000")
 sc = SparkContext(conf=conf)
 sc.setLogLevel("WARN")   # 设置日志级别
 spark = SparkSession(sc)
@@ -45,17 +45,23 @@ print("load hdfs data successful")
 # ~ rdd_test.cache()
 
 ## 训练逻辑回归多分类器
+print("LogisticRegressionModel")
 print("model train start at:", time.strftime('%Y-%m-%d %H:%M:%S'))
-model = LogisticRegressionWithLBFGS().train(rdd_train, iterations=100, numClasses=15)
+model = LogisticRegressionModel().train(rdd_train, iterations=100, numClasses=15)
 print("model train successful at:", time.strftime('%Y-%m-%d %H:%M:%S'))
-
-## 保存模型
-import os, tempfile
-path = tempfile.mkdtemp()
-model.save(sc, path)
-print("Model saved at: ",path)
 
 ## 计算准确率
 scoreAndLabels = rdd_test.map(lambda point:(model.predict(point.features),point.label))
 accuracy = scoreAndLabels.filter(lambda l: l[0]==l[1]).count() / rdd_test.count()
 print("accuracy: ",accuracy)
+
+# ## 训练SVM分类器
+# print("LogisticRegressionWithSGD")
+# print("model train start at:", time.strftime('%Y-%m-%d %H:%M:%S'))
+# model = LogisticRegressionWithSGD().train(rdd_train, iterations=100)
+# print("model train successful at:", time.strftime('%Y-%m-%d %H:%M:%S'))
+
+# ## 计算准确率
+# scoreAndLabels = rdd_test.map(lambda point:(model.predict(point.features),point.label))
+# accuracy = scoreAndLabels.filter(lambda l: l[0]==l[1]).count() / rdd_test.count()
+# print("accuracy: ",accuracy)

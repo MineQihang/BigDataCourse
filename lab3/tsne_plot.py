@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 
-data_dir = "RawDataset"
+data_dir = "/home/hadoop/Experiment/Ex3_CHN/RawDataset"
 
 def _get_label(pic_name):
     set_str = pic_name.strip("Locate{}.jpg")  # cut paddings
@@ -31,10 +31,36 @@ x, y = load_raw()
 
 print(x.shape,y.shape)
 
+
+# TSNE
+'''
 from sklearn.manifold import TSNE
 df = TSNE(n_components=2).fit_transform(x)
 vx = df[:,0]
 vy = df[:,1]
 label = y
-plt.scatter(vx, vy, c=label, s=1, cmap=plt.cm.get_cmap("jet", 15))
-plt.show()
+plt.scatter(vx, vy, c=label, s=1, cmap=plt.cm.get_cmap("rainbow", 15))
+plt.savefig("./img/TSNE.jpg")
+'''
+
+# LocallyLinearEmbedding
+'''
+from sklearn.manifold import LocallyLinearEmbedding
+df = LocallyLinearEmbedding(n_components=2).fit_transform(x)
+vx = df[:,0]
+vy = df[:,1]
+label = y
+plt.scatter(vx, vy, c=label, s=1, cmap=plt.cm.get_cmap("rainbow", 15))
+plt.savefig("./img/LocallyLinearEmbedding.jpg")
+'''
+
+# SpectralEmbedding
+'''
+from sklearn.manifold import SpectralEmbedding
+df = SpectralEmbedding(n_components=2).fit_transform(x)
+vx = df[:,0]
+vy = df[:,1]
+label = y
+plt.scatter(vx, vy, c=label, s=1, cmap=plt.cm.get_cmap("rainbow", 15))
+plt.savefig("./img/SpectralEmbedding.jpg")
+'''
